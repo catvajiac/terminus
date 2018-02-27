@@ -26,6 +26,8 @@ It would be awesome if we could do these at some point:
   - [ ] Allow processes to somehow flush output to the client?  Is this even possible?
 
 
+Tim is a cool squid
+
 *History of Computing*
 
 *Project 1*
