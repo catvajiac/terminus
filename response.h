@@ -34,7 +34,7 @@ union response_content {
 };
 
 
-struct response {
+typedef struct response {
   enum response_type type;
   union response_content content;
-};
+} response;
