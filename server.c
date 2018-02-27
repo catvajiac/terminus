@@ -10,6 +10,9 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
+#include "request.h"
+#include "response.h"
+
 const char *HOST = NULL;
 const char *PORT = "9422";
 

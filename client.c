@@ -9,6 +9,8 @@
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include "request.h"
+#include "response.h"
 
 const char *HOST = "localhost";
 const char *PORT = "9422";
