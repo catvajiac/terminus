@@ -12,6 +12,8 @@
 #include "request.h"
 #include "response.h"
 
+#include <sys/ioctl.h>
+
 const char *HOST = "localhost";
 const char *PORT = "9422";
 
@@ -65,6 +67,12 @@ FILE *socket_dial(const char *host, const char *port) {
 }
 
 int main(int argc, char *argv[]) {
+
+    //Retreive size of client terminal in terms of rows and cols
+    //TODO: Poll in background for change in size to send updates
+    struct winsize w;
+    ioctl(STDOUT_FILENO, TIOCGWINSZ, &w);
+
     /* Connect to remote machine */
     FILE *client_file = socket_dial(HOST, PORT);
     if (client_file == NULL) {
@@ -73,6 +81,21 @@ int main(int argc, char *argv[]) {
 
     /* Read from stdin and send to server */
     char buffer[BUFSIZ];
+
+    //Make new request and check and stuff
+    request *req = malloc(sizeof(request) + 1);
+    if(!req){
+        perror("REQ_CREATE");
+    }
+
+    //Send connection
+    req->type = REQCONNECT;
+
+    //Grab terminal size from client user
+    req->content.connect.width = w.ws_col;
+    req->content.connect.height = w.ws_row;
+
+
     while (fgets(buffer, BUFSIZ, stdin)) {
         fputs(buffer, client_file);
         fgets(buffer, BUFSIZ, client_file);

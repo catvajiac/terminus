@@ -29,7 +29,7 @@ union request_content {
 };
 
 
-struct request {
+typedef struct request {
   enum request_type type;
   union request_content content;
-};
+} request;
