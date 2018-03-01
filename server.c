@@ -16,6 +16,41 @@
 const char *HOST = NULL;
 const char *PORT = "9432";
 
+int socket_listen(const char *host, const char *port);
+FILE *accept_client(int server_fd);
+
+int main(int argc, char *argv[]) {
+    int server_fd = socket_listen(HOST, PORT);
+    if (server_fd < 0) {
+        return EXIT_FAILURE;
+    }
+
+    /* Process incoming connections */
+    int sid = 0;
+    while (1) {
+        FILE *client_file = accept_client(server_fd);
+        if (client_file == NULL) {
+            continue;
+        }
+
+        /* Read from client and then echo back */
+        request * req = malloc(sizeof(request));
+        response * res = malloc(sizeof(response));
+        res->type = RESCONNECT;
+        res->content.connect.session_id = sid;
+        sid += 1;
+        while (fread((char *)req, sizeof(request), 1, client_file)) {
+            printf("Received a connect request\n");
+            fwrite((char *)res, sizeof(response), 1, client_file);
+        }
+
+        /* Close connection */
+        fclose(client_file);
+    }
+
+    return EXIT_SUCCESS;
+}
+
 int socket_listen(const char *host, const char *port) {
     /* Lookup server address information */
     struct addrinfo  hints = {
@@ -82,37 +117,4 @@ FILE *accept_client(int server_fd) {
 
     return client_file;
 }
-
-int main(int argc, char *argv[]) {
-    int server_fd = socket_listen(HOST, PORT);
-    if (server_fd < 0) {
-        return EXIT_FAILURE;
-    }
-
-    /* Process incoming connections */
-    int sid = 0;
-    while (1) {
-        FILE *client_file = accept_client(server_fd);
-        if (client_file == NULL) {
-            continue;
-        }
-
-        /* Read from client and then echo back */
-        request * req = malloc(sizeof(request));
-        response * res = malloc(sizeof(response));
-        res->type = RESCONNECT;
-        res->content.connect.session_id = sid;
-        sid += 1;
-        while (fread((char *)req, sizeof(request), 1, client_file)) {
-            printf("Received a connect request\n");
-            fwrite((char *)res, sizeof(response), 1, client_file);
-        }
-
-        /* Close connection */
-        fclose(client_file);
-    }
-
-    return EXIT_SUCCESS;
-}
-
 /* vim: set expandtab sts=4 sw=4 ts=8 ft=c: */
