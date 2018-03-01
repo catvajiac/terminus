@@ -15,7 +15,7 @@
 #include <sys/ioctl.h>
 
 const char *HOST = "localhost";
-const char *PORT = "9422";
+const char *PORT = "9432";
 
 FILE *socket_dial(const char *host, const char *port) {
     /* Lookup server address information */
@@ -80,11 +80,11 @@ int main(int argc, char *argv[]) {
     }
 
     /* Read from stdin and send to server */
-    char buffer[BUFSIZ];
 
     //Make new request and check and stuff
     request *req = malloc(sizeof(request) + 1);
-    if(!req){
+    response *res = malloc(sizeof(response) + 1);
+    if(!(req && res)){
         perror("REQ_CREATE");
     }
 
@@ -95,13 +95,18 @@ int main(int argc, char *argv[]) {
     req->content.connect.width = w.ws_col;
     req->content.connect.height = w.ws_row;
 
-
-    while (fgets(buffer, BUFSIZ, stdin)) {
-        fputs(buffer, client_file);
-        fgets(buffer, BUFSIZ, client_file);
-        fputs(buffer, stdout);
+    ((char*)req)[sizeof(request)] = 0;
+    if (fputs("AYY", client_file) < 0) {
+      printf("error!\n");
     }
-
+    fflush(client_file);
+    printf("sent!\n");
+    fgets((char *)res, sizeof(response), client_file);
+    if (res->type == RESCONNECT) {
+      printf("My id is: %i\n", res->content.connect.session_id);
+    } else {
+      printf("error\n");
+    }
     fclose(client_file);
     return EXIT_SUCCESS;
 }

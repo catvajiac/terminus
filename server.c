@@ -14,7 +14,7 @@
 #include "response.h"
 
 const char *HOST = NULL;
-const char *PORT = "9422";
+const char *PORT = "9432";
 
 int socket_listen(const char *host, const char *port) {
     /* Lookup server address information */
@@ -97,10 +97,17 @@ int main(int argc, char *argv[]) {
         }
 
         /* Read from client and then echo back */
+        request * req = malloc(sizeof(request) + 1);
+        response * res = malloc(sizeof(response) + 1);
+        res->type = RESCONNECT;
+        res->content.connect.session_id = 0;
+        printf("About to wait:\n");
+        fflush(stdout);
         char buffer[BUFSIZ];
         while (fgets(buffer, BUFSIZ, client_file)) {
-            fputs(buffer, stdout);
-            fputs(buffer, client_file);
+            printf("%s\n", buffer);
+            printf("Received a connect request\n");
+            fputs((char *)res, client_file);
         }
 
         /* Close connection */
