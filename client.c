@@ -49,13 +49,13 @@ int main(int argc, char *argv[]) {
     req->content.connect.height = w.ws_row;
 
     if (fwrite(req, sizeof(request), 1, client_file) < 0) {
-      printf("error!\n");
+        printf("error!\n");
     }
     fread(res, sizeof(response), 1, client_file);
     if (res->type == RESCONNECT) {
-      printf("My id is: %i\n", res->content.connect.session_id);
+        printf("My id is: %i\n", res->content.connect.session_id);
     } else {
-      printf("error\n");
+        printf("error\n");
     }
     fclose(client_file);
     return EXIT_SUCCESS;
@@ -70,26 +70,26 @@ FILE *socket_dial(const char *host, const char *port) {
     };
     int status;
     if ((status = getaddrinfo(host, port, &hints, &results)) != 0) {
-    	fprintf(stderr, "getaddrinfo failed: %s\n", gai_strerror(status));
-	return NULL;
+        fprintf(stderr, "getaddrinfo failed: %s\n", gai_strerror(status));
+        return NULL;
     }
 
     /* For each server entry, allocate socket and try to connect */
     int client_fd = -1;
     for (struct addrinfo *p = results; p != NULL && client_fd < 0; p = p->ai_next) {
-	/* Allocate socket */
-	if ((client_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0) {
-	    fprintf(stderr, "Unable to make socket: %s\n", strerror(errno));
-	    continue;
-	}
+      /* Allocate socket */
+      if ((client_fd = socket(p->ai_family, p->ai_socktype, p->ai_protocol)) < 0) {
+          fprintf(stderr, "Unable to make socket: %s\n", strerror(errno));
+          continue;
+      }
 
-	/* Connect to host */
-	if (connect(client_fd, p->ai_addr, p->ai_addrlen) < 0) {
-	    fprintf(stderr, "Unable to connect to %s:%s: %s\n", host, port, strerror(errno));
-	    close(client_fd);
-	    client_fd = -1;
-	    continue;
-	}
+      /* Connect to host */
+      if (connect(client_fd, p->ai_addr, p->ai_addrlen) < 0) {
+          fprintf(stderr, "Unable to connect to %s:%s: %s\n", host, port, strerror(errno));
+          close(client_fd);
+          client_fd = -1;
+          continue;
+      }
     }
 
     /* Release allocate address information */
