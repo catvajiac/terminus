@@ -90,6 +90,7 @@ int main(int argc, char *argv[]) {
     }
 
     /* Process incoming connections */
+    int sid = 0;
     while (1) {
         FILE *client_file = accept_client(server_fd);
         if (client_file == NULL) {
@@ -100,14 +101,13 @@ int main(int argc, char *argv[]) {
         request * req = malloc(sizeof(request) + 1);
         response * res = malloc(sizeof(response) + 1);
         res->type = RESCONNECT;
-        res->content.connect.session_id = 0;
+        res->content.connect.session_id = sid;
+        sid += 1;
         printf("About to wait:\n");
         fflush(stdout);
-        char buffer[BUFSIZ];
-        while (fgets(buffer, BUFSIZ, client_file)) {
-            printf("%s\n", buffer);
+        while (fread((char *)req, sizeof(request), 1, client_file)) {
             printf("Received a connect request\n");
-            fputs((char *)res, client_file);
+            fwrite((char *)res, sizeof(response), 1, client_file);
         }
 
         /* Close connection */

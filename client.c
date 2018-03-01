@@ -82,8 +82,8 @@ int main(int argc, char *argv[]) {
     /* Read from stdin and send to server */
 
     //Make new request and check and stuff
-    request *req = malloc(sizeof(request) + 1);
-    response *res = malloc(sizeof(response) + 1);
+    request *req = malloc(sizeof(request));
+    response *res = malloc(sizeof(response));
     if(!(req && res)){
         perror("REQ_CREATE");
     }
@@ -95,13 +95,12 @@ int main(int argc, char *argv[]) {
     req->content.connect.width = w.ws_col;
     req->content.connect.height = w.ws_row;
 
-    ((char*)req)[sizeof(request)] = 0;
-    if (fputs("AYY", client_file) < 0) {
+    if (fwrite(req, sizeof(request), 1, client_file) < 0) {
       printf("error!\n");
     }
     fflush(client_file);
     printf("sent!\n");
-    fgets((char *)res, sizeof(response), client_file);
+    fread(res, sizeof(response), 1, client_file);
     if (res->type == RESCONNECT) {
       printf("My id is: %i\n", res->content.connect.session_id);
     } else {
