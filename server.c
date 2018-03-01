@@ -9,8 +9,8 @@
 #include <sys/socket.h>
 #include <unistd.h>
 
-#include "request.h"
-#include "response.h"
+#include "lib/request.h"
+#include "lib/response.h"
 
 const char *HOST = NULL;
 const char *PORT = "9432";

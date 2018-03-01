@@ -8,8 +8,8 @@
 #include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
-#include "request.h"
-#include "response.h"
+#include "lib/request.h"
+#include "lib/response.h"
 
 #include <sys/ioctl.h>
 
