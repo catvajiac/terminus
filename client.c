@@ -98,8 +98,6 @@ int main(int argc, char *argv[]) {
     if (fwrite(req, sizeof(request), 1, client_file) < 0) {
       printf("error!\n");
     }
-    fflush(client_file);
-    printf("sent!\n");
     fread(res, sizeof(response), 1, client_file);
     if (res->type == RESCONNECT) {
       printf("My id is: %i\n", res->content.connect.session_id);

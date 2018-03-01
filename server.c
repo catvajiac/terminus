@@ -98,13 +98,11 @@ int main(int argc, char *argv[]) {
         }
 
         /* Read from client and then echo back */
-        request * req = malloc(sizeof(request) + 1);
-        response * res = malloc(sizeof(response) + 1);
+        request * req = malloc(sizeof(request));
+        response * res = malloc(sizeof(response));
         res->type = RESCONNECT;
         res->content.connect.session_id = sid;
         sid += 1;
-        printf("About to wait:\n");
-        fflush(stdout);
         while (fread((char *)req, sizeof(request), 1, client_file)) {
             printf("Received a connect request\n");
             fwrite((char *)res, sizeof(response), 1, client_file);
