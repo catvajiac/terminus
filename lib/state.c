@@ -1,5 +1,7 @@
 #include "state.h"
 #include <stdlib.h>
+#include <sys/types.h>
+#include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
 
@@ -41,6 +43,9 @@ void cleanup_user(struct user * u) {
   }
   if (u->out_fd >= 0) {
     close(u->out_fd);
+  }
+  if (u->pid >= 0) {
+    kill(u->pid, SIGTERM); //Should we be more forceful?
   }
   free(u);
 }
