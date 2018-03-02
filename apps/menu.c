@@ -2,16 +2,22 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <sys/types.h>
+#include <signal.h>
 #include <sys/wait.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
+int current_pid;
+
 int run_menu(int w, int h);
 void run_menu_loop(int w, int h);
 int run_app(char * app, int w, int h);
+void wrapup();
 
 int main(int argc, char * argv[]) {
+  signal(SIGTERM, wrapup);
+  current_pid = -1;
   char c;
   int w = -1;
   int h = -1;
@@ -90,7 +96,9 @@ int run_app(char * app, int h, int w) {
     printf("Server side issue forking.\n");
     return -1;
   } else if (rc > 0) { //Parent
+    current_pid = rc; //If signaled while waiting, we want to signal the child.
     waitpid(rc, NULL, 0);
+    current_pid = -1;
   } else { //Child
     char path[BUFSIZ];
     int i;
@@ -103,5 +111,12 @@ int run_app(char * app, int h, int w) {
     sprintf(wstr, "%i", w);
     char * argv[] = {path, "-H", hstr, "-W", wstr};
     execvp(path, argv);
+  }
+  return 0;
+}
+
+void wrapup() {
+  if (current_pid >= 0) {
+    kill(SIGTERM, current_pid);
   }
 }
