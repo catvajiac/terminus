@@ -105,7 +105,7 @@ response * handle_disconnect(request * req, state * s) {
 
 response * handle_connect(request * req, state * s) {
   int id;
-  if ((id = new_user(s)) < 0) return handle_error(ERINTERNAL);
+  if ((id = new_user(s, req->content.connect.width, req->content.connect.height)) < 0) return handle_error(ERINTERNAL);
   response * res = malloc(sizeof(response));
   if (!res) return NULL;
   res->type = RESCONNECT;

@@ -18,11 +18,13 @@ void delete_state(state * s) {
   }
 }
 
-int new_user(state * s) {
+int new_user(state * s, int width, int height) {
   struct user * u = malloc(sizeof(struct user));
   if (!u) return -1;
   u->next = s->head;
   u->session_id = s->head ? s->head->session_id + 1 : 0;
+  u->twidth = width;
+  u->theight = height;
   s->head = u;
   return u->session_id;
 }
