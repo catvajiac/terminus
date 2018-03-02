@@ -90,7 +90,10 @@ response * handle_update(request * req, state * s) {
   response * res = malloc(sizeof(response));
   if (!res) return NULL;
   res->type = RESUPDATE;
-  update_user(s, req, res);
+  enum error_type e = update_user(s, req, res);
+  if (e != NOERR) {
+    return handle_error(e);
+  }
   return res;
 }
 
