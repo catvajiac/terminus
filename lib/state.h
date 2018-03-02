@@ -11,6 +11,7 @@ struct user {
   int theight;
   int in_fd;
   int out_fd;
+  int pid;
   struct user * next;
 };
 

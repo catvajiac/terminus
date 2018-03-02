@@ -27,6 +27,7 @@ int new_user(state * s, int width, int height) {
   u->session_id = s->head ? s->head->session_id + 1 : 0;
   u->in_fd = -1;
   u->out_fd = -1;
+  u->pid = -1;
   u->twidth = width;
   u->theight = height;
   s->head = u;
@@ -71,9 +72,9 @@ int delete_user(state * s, int target_id) {
 }
 
 int start_user(state * s, int id) {
-  int rc = fork();
   int inpipe[2];
   int outpipe[2];
+  int rc = fork();
   struct user * u = find_user(s, id);
   if (pipe(inpipe) == -1) {
     printf("Error with pipe\n");
@@ -91,6 +92,7 @@ int start_user(state * s, int id) {
     close(outpipe[1]); //We don't need to write child's stdout
     u->in_fd = inpipe[1];
     u->out_fd = outpipe[0];
+    u->pid = rc;
   } else { //Child
     dup2(inpipe[0], 0); //Read from the read end on stdin
     dup2(outpipe[1], 1); //Write to the write end on stdout
