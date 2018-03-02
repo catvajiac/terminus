@@ -7,13 +7,14 @@ homemade BBS.
   - [x] Begin protocol (branch: `server-client`)
 
 #### Server
-  - [ ] Set serverside representation of sessions
+  - [x] Set serverside representation of sessions
   - [ ] Set serverside fork + exec
+  - [ ] Create menu application to list, choose, run (by fork + exec), and come back to list for the programs.
   - [ ] Close stdin/stdout for user processes, and open appropriate files
   - [ ] Redirect information to and from client to process
 
 #### Client
-  - [ ] Get terminal size
+  - [x] Get terminal size
   - [ ] Initial connection, save session id.
   - [ ] Buffer keypresses, send to server occasionally
   - [ ] Display output
