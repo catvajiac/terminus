@@ -92,6 +92,7 @@ response * handle_update(request * req, state * s) {
   res->type = RESUPDATE;
   enum error_type e = update_user(s, req, res);
   if (e != NOERR) {
+    free(res);
     return handle_error(e);
   }
   return res;
@@ -114,6 +115,7 @@ response * handle_connect(request * req, state * s) {
   res->type = RESCONNECT;
   res->content.connect.session_id = id;
   if (start_user(s, id) < 0) {
+    free(res);
     return handle_error(ERINTERNAL);
   }
   return res;

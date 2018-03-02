@@ -25,6 +25,8 @@ int new_user(state * s, int width, int height) {
   if (!u) return -1;
   u->next = s->head;
   u->session_id = s->head ? s->head->session_id + 1 : 0;
+  u->in_fd = -1;
+  u->out_fd = -1;
   u->twidth = width;
   u->theight = height;
   s->head = u;
@@ -33,6 +35,12 @@ int new_user(state * s, int width, int height) {
 
 void cleanup_user(struct user * u) {
   //Once struct user gets more complex, this handles cleaning it up.
+  if (u->in_fd >= 0) {
+    close(u->in_fd);
+  }
+  if (u->out_fd >= 0) {
+    close(u->out_fd);
+  }
   free(u);
 }
 
