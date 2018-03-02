@@ -4,6 +4,7 @@
 #include "response.h"
 #include "networklib.h"
 #include "state.h"
+#include "signal.h"
 #include "server_handlers.h"
 
 response * handle_connect(request * req, state * s);
@@ -15,14 +16,16 @@ request * get_request(FILE * client_file);
 response * interpret_request(request * req, state * s);
 void send_response(response * res, FILE * client_file);
 void cleanup(request * req, response * res);
+void cleanup_server();
+state * user_states;
 
 int handle_requests(const char * HOST, const char * PORT) {
   int server_fd = socket_listen(HOST, PORT);
   if (server_fd < 0) {
     return 1;
   }
-
-  state * user_states = init_state();
+  signal(SIGTERM, cleanup_server);
+  user_states = init_state();
   while (1) {
     handle_request(user_states, server_fd);
   }
@@ -121,3 +124,6 @@ response * handle_connect(request * req, state * s) {
   return res;
 }
 
+void cleanup_server() {
+  delete_state(user_states);
+}

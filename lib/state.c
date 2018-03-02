@@ -17,7 +17,7 @@ void delete_state(state * s) {
   struct user * temp;
   while (curr) {
     temp = curr->next;
-    free(curr);
+    cleanup_user(curr);
     curr = temp;
   }
 }
@@ -63,6 +63,7 @@ int delete_user(state * s, int target_id) {
   if (curr && curr->session_id == target_id) {
     cleanup_user(curr);
     s->head = curr->next;
+    return 0;
   }
 
   struct user * next = curr->next;
