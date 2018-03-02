@@ -81,6 +81,8 @@ int start_user(state * s, int id) {
   } else if (rc > 0) { //Parent
     close(inpipe[0]); //We don't need to read child's stdin
     close(outpipe[1]); //We don't need to write child's stdout
+    u->in_fd = inpipe[1];
+    u->out_fd = outpipe[0];
   } else { //Child
     dup2(inpipe[0], 0); //Read from the read end on stdin
     dup2(outpipe[1], 1); //Write to the write end on stdout
