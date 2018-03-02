@@ -8,23 +8,20 @@ homemade BBS.
 
 #### Server
   - [x] Set serverside representation of sessions
-  - [ ] Set serverside fork + exec
-  - [ ] Create menu application to list, choose, run (by fork + exec), and come back to list for the programs.
-  - [ ] Close stdin/stdout for user processes, and open appropriate files
-  - [ ] Redirect information to and from client to process
+  - [x] Set serverside fork + exec
+  - [x] Create menu application to list, choose, run (by fork + exec), and come back to list for the programs.
+  - [x] Close stdin/stdout for user processes, and open appropriate files
+  - [x] Redirect information to and from client to process
 
 #### Client
   - [x] Get terminal size
   - [ ] Initial connection, save session id.
   - [ ] Buffer keypresses, send to server occasionally
   - [ ] Display output
+  - [ ] If the response completely filled the buffer, make another request immediately following.
 
 #### Applications
   - [ ] Make a few simple applications, particularly some showing off the ability to use the terminal size.  Maybe centering, or something.
-
-#### Future
-It would be awesome if we could do these at some point:
-  - [ ] Allow processes to somehow flush output to the client?  Is this even possible?
 
 
 *History of Computing*
