@@ -1,6 +1,8 @@
+#pragma once
+#define OUT_BUFSIZ 1024
 struct update_response {
   int length;
-  char buffer[1024];
+  char buffer[OUT_BUFSIZ];
 };
 
 
@@ -8,7 +10,9 @@ enum error_type {
   ERINVALIDSESSION,
   ERINTERNAL,
   ERNOTYPE,
-  EROTHER
+  ERPARAM,
+  EROTHER,
+  NOERR
 };
 
 
