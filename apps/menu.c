@@ -68,7 +68,7 @@ int run_menu(int w, int h) {
   d = opendir("./binaries");
   if (d) {
     while ((dir = readdir(d)) != NULL) {
-      if (strcmp(dir->d_name, ".") != 0 && strcmp(dir->d_name, "..") != 0) {
+      if (dir->d_name[0] != '.') { //Ignore dotfiles
         if (i == 0) {
           app = strdup(dir->d_name);
         }
