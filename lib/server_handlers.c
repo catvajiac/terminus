@@ -4,7 +4,6 @@
 #include "response.h"
 #include "networklib.h"
 #include "state.h"
-#include "signal.h"
 #include "server_handlers.h"
 
 response * handle_connect(request * req, state * s);
@@ -16,16 +15,14 @@ request * get_request(FILE * client_file);
 response * interpret_request(request * req, state * s);
 void send_response(response * res, FILE * client_file);
 void cleanup(request * req, response * res);
-void cleanup_server();
-state * user_states;
 
 int handle_requests(const char * HOST, const char * PORT) {
   int server_fd = socket_listen(HOST, PORT);
   if (server_fd < 0) {
     return 1;
   }
-  signal(SIGTERM, cleanup_server);
-  user_states = init_state();
+
+  state * user_states = init_state();
   while (1) {
     handle_request(user_states, server_fd);
   }
@@ -93,11 +90,7 @@ response * handle_update(request * req, state * s) {
   response * res = malloc(sizeof(response));
   if (!res) return NULL;
   res->type = RESUPDATE;
-  enum error_type e = update_user(s, req, res);
-  if (e != NOERR) {
-    free(res);
-    return handle_error(e);
-  }
+  res->content.update.length = 0; //TODO: implement actual content here
   return res;
 }
 
@@ -117,13 +110,6 @@ response * handle_connect(request * req, state * s) {
   if (!res) return NULL;
   res->type = RESCONNECT;
   res->content.connect.session_id = id;
-  if (start_user(s, id) < 0) {
-    free(res);
-    return handle_error(ERINTERNAL);
-  }
   return res;
 }
 
-void cleanup_server() {
-  delete_state(user_states);
-}

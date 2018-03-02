@@ -6,7 +6,7 @@ LIBOBJ=$(LIBS:.c=.o)
 LIBHEAD=$(LIBS:.c=.o)
 TARGETS=$(SOURCES:.c=)
 
-all: $(TARGETS) menu
+all: $(TARGETS)
 
 client: client.o $(LIBOBJ) $(LIBHEAD)
 	$(CC) -o $@ $< $(LIBOBJ)
@@ -15,9 +15,6 @@ server: server.o $(LIBOBJ) $(LIBHEAD)
 	$(CC) -o $@ $< $(LIBOBJ)
 
 clean:
-	@rm $(TARGETS) && make -C ./apps/ clean
+	@rm $(TARGETS)
 
-menu:
-	make -C ./apps/
-
-.PHONY: clean all menu
+.PHONY: clean all
