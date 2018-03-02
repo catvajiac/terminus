@@ -8,7 +8,8 @@ struct user {
 };
 
 state * init_state();
-int new_user();
+int new_user(state * s);
+struct user * find_user(state * s, int id);
 void delete_state(state * s);
 int new_user(state * s);
 void cleanup_user(struct user * u);

@@ -32,6 +32,14 @@ void cleanup_user(struct user * u) {
   free(u);
 }
 
+struct user * find_user(state * s, int id) {
+  struct user * u = s->head;
+  while (u && u->session_id != id) {
+    u = u->next;
+  }
+  return u;
+}
+
 int delete_user(state * s, int target_id) {
   struct user * curr = s->head;
   if (curr && curr->session_id == target_id) {
