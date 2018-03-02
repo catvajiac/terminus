@@ -1,5 +1,7 @@
 #include "state.h"
-#include "stdlib.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <unistd.h>
 
 state * init_state() {
   state * s = malloc(sizeof(state));
@@ -58,4 +60,61 @@ int delete_user(state * s, int target_id) {
   curr->next = next->next;
   cleanup_user(next);
   return 0;
+}
+
+int start_user(state * s, int id) {
+  int rc = fork();
+  int inpipe[2];
+  int outpipe[2];
+  struct user * u = find_user(s, id);
+  if (pipe(inpipe) == -1) {
+    printf("Error with pipe\n");
+    return -1;
+  }
+  if (pipe(outpipe) == -1) {
+    printf("Error with pipe\n");
+    return -1;
+  }
+  if (rc < 0) {
+    printf("Error forking\n");
+    return -1;
+  } else if (rc > 0) { //Parent
+    close(inpipe[0]); //We don't need to read child's stdin
+    close(outpipe[1]); //We don't need to write child's stdout
+  } else { //Child
+    dup2(inpipe[0], 0); //Read from the read end on stdin
+    dup2(outpipe[1], 1); //Write to the write end on stdout
+    close(inpipe[0]);
+    close(inpipe[1]);
+    close(outpipe[0]);
+    close(outpipe[1]);
+    char wstr[20];
+    char hstr[20];
+    sprintf(wstr, "%i", u->twidth);
+    sprintf(hstr, "%i", u->theight);
+    char * argv[] = {"./apps/menu", "-H", hstr, "-W", wstr};
+    execvp("./apps/menu", argv);
+  }
+  return 0;
+}
+
+enum error_type update_user(state * s, request * req, response * res) {
+  struct user * u = find_user(s, req->content.update.session_id);
+  int w;
+  int w_target = req->content.update.length;
+  if (w_target > 0 && w_target < IN_BUFSIZ) {
+    w = write(u->in_fd, req->content.update.buffer, w_target);
+  } else if (w_target < 0 || w_target >= IN_BUFSIZ) {
+    return ERPARAM;
+  }
+  if (w != w_target) {
+    return ERINTERNAL;
+  }
+  int r = read(u->out_fd, res->content.update.buffer, OUT_BUFSIZ);
+  if ( r >= 0) {
+    res->content.update.length = r;
+  } else {
+    return ERINTERNAL;
+  }
+  return NOERR;
 }

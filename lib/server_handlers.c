@@ -90,7 +90,7 @@ response * handle_update(request * req, state * s) {
   response * res = malloc(sizeof(response));
   if (!res) return NULL;
   res->type = RESUPDATE;
-  res->content.update.length = 0; //TODO: implement actual content here
+  update_user(s, req, res);
   return res;
 }
 
@@ -110,6 +110,9 @@ response * handle_connect(request * req, state * s) {
   if (!res) return NULL;
   res->type = RESCONNECT;
   res->content.connect.session_id = id;
+  if (start_user(s, id) < 0) {
+    return handle_error(ERINTERNAL);
+  }
   return res;
 }
 

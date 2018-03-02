@@ -1,3 +1,5 @@
+#pragma once
+#define IN_BUFSIZ 128
 enum request_type {
   REQCONNECT,
   REQUPDATE,
@@ -12,7 +14,8 @@ struct connect_request {
 
 
 struct update_request {
-  char buffer[128];
+  char buffer[IN_BUFSIZ];
+  int length;
   int session_id;
 };
 
