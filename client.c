@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+#include <pthread.h>
 #include <netdb.h>
 #include <sys/socket.h>
 #include <unistd.h>
@@ -19,33 +19,6 @@ const char *PORT = "9432";
 int session_id, char_in = 0; //SID and size of read in
 
 void* getKeys(void* arg);
-
-
-/*
-  Thread helper functions
-*/
-void start(void* func, void *arg, pthread_t thread){
-    int retval = pthread_create(&thread, NULL, func, arg);
-    if (retval != 0){
-        perror("create");
-    }
-}
-
-void join(void **result, pthread_t thread){
-    int retval = pthread_join(thread, result);
-    //The Join operation failed
-    if (retval != 0){
-        perror("join");
-    }
-}
-
-void detach(pthread_t thread){
-    int retval = pthread_detach(thread);
-    if (retval != 0){
-        perror("detach");
-    }
-}
-
 
 int main(int argc, char *argv[]) {
 
@@ -90,8 +63,16 @@ int main(int argc, char *argv[]) {
     char *circle_buffer = malloc(4096); //God help us all
 
     pthread_t keys;
-    start(getKeys, circle_buffer, keys);
-    detach(keys);
+
+    int retval = pthread_create(&keys, NULL, getKeys, circle_buffer);
+    if (retval != 0){
+        perror("CREATE");
+    }
+
+    retval = pthread_detach(keys);
+    if (retval != 0){
+        perror("DETATCH");
+    }
 
     int size, char_out = 0;
 
