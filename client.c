@@ -125,22 +125,24 @@ void *getKeys(void* arg){
     char* buffer = (char *) arg;
     char in_buffer[IN_BUFSIZ];
 
-    int read_size = fread(in_buffer, IN_BUFSIZ, 1, stdin);
+    while(1){
+        int read_size = fread(in_buffer, IN_BUFSIZ, 1, stdin);
     
-    if(char_in + read_size <= 4096){
-        buffer[char_in] = in_buffer;
-        char_in += read_size;
-    }
-    else{
-        //Split the string
-        int overflow = (char_in + read_size) - 4096;
-        char * first, second;
-        strncpy(first, in_buffer, (read_size - overflow));
-        strncpy(second, in_buffer[char_in], overflow);
+        if(char_in + read_size <= 4096){
+            buffer[char_in] = in_buffer;
+            char_in += read_size;
+        }
+        else{
+            //Split the string
+            int overflow = (char_in + read_size) - 4096;
+            char * first, second;
+            strncpy(first, in_buffer, (read_size - overflow));
+            strncpy(second, in_buffer[char_in], overflow);
 
-        buffer[char_in] = first;
-        buffer[0] = second;
-        char_in = (char_in + IN_BUFSIZ) % 4096; //Wraparound
+            buffer[char_in] = first;
+            buffer[0] = second;
+            char_in = (char_in + IN_BUFSIZ) % 4096; //Wraparound
+        }
     }
 }
 
