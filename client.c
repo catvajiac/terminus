@@ -115,6 +115,7 @@ int main(int argc, char *argv[]) {
 
         //Get response
         fread(res, sizeof(response), 1, client_file);
+        printf("%s\n", res->content.update.buffer);
     }
 
     fclose(client_file);
@@ -135,12 +136,12 @@ void *getKeys(void* arg){
         else{
             //Split the string
             int overflow = (char_in + read_size) - 4096;
-            char * first, second;
-            strncpy(first, in_buffer, (read_size - overflow));
-            strncpy(second, in_buffer[char_in], overflow);
+            char *first, *second;
+            strncpy(first, &in_buffer, (read_size - overflow));
+            strncpy(second, &in_buffer[char_in], overflow);
 
-            buffer[char_in] = first;
-            buffer[0] = second;
+            buffer[char_in] = *first;
+            buffer[0] = *second;
             char_in = (char_in + IN_BUFSIZ) % 4096; //Wraparound
         }
     }
