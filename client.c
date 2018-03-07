@@ -16,6 +16,7 @@
 
 const char *HOST = "localhost";
 const char *PORT = "9432";
+int session_id;
 
 int main(int argc, char *argv[]) {
 
@@ -30,11 +31,10 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
 
-    /* Read from stdin and send to server */
-
     //Make new request and check and stuff
     request *req = malloc(sizeof(request));
     response *res = malloc(sizeof(response));
+    
     if(!(req && res)){
         perror("REQ_CREATE");
     }
@@ -46,15 +46,47 @@ int main(int argc, char *argv[]) {
     req->content.connect.width = w.ws_col;
     req->content.connect.height = w.ws_row;
 
-    if (fwrite(req, sizeof(request), 1, client_file) < 0) {
-        printf("error!\n");
-    }
+    //Send connect request
+    if (fwrite(req, sizeof(request), 1, client_file) < 0)
+        perror("REQCONNECT");
+    
+    //Grab server response
     fread(res, sizeof(response), 1, client_file);
-    if (res->type == RESCONNECT) {
-        printf("My id is: %i\n", res->content.connect.session_id);
-    } else {
-        printf("error\n");
+
+    if (res->type == RESCONNECT)
+        session_id = res->content.connect.session_id;
+    else
+        perror("RESCONNECT");
+
+    char out_buffer[OUT_BUFSIZ];
+    char in_buffer[IN_BUFSIZ];
+    while(1){
+
+        bzero(in_buffer, IN_BUFSIZ);
+        bzero(out_buffer, OUT_BUFSIZ);
+
+        fgets(in_buffer, IN_BUFSIZ, stdin);
+        
+        //Set request fields
+        req->type = REQUPDATE;
+        int size = snprintf(req->content.update.buffer, sizeof(in_buffer), "%s", in_buffer);
+        req->content.update.session_id = session_id;
+        req->content.update.length = size;
+
+        printf("%d",req->content.update.length);
+        if (fwrite(req, sizeof(request), 1, client_file) < 0)
+            perror("REQUPDATE");
+
+        //fread(res, sizeof(response), 1, client_file);
+
+        //Check again to see if there's more data in the buffer
+        while(res->content.update.length == OUT_BUFSIZ){
+            
+        }
+
     }
+
+
     fclose(client_file);
     return EXIT_SUCCESS;
 }
