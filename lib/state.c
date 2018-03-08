@@ -83,15 +83,15 @@ int start_user(state * s, int id) {
   int rc = fork();
   struct user * u = find_user(s, id);
   if (pipe(inpipe) == -1) {
-    printf("Error with pipe\n");
+    printf("  ! Error with pipe\n");
     return -1;
   }
   if (pipe(outpipe) == -1) {
-    printf("Error with pipe\n");
+    printf("  ! Error with pipe\n");
     return -1;
   }
   if (rc < 0) {
-    printf("Error forking\n");
+    printf("  ! Error forking\n");
     return -1;
   } else if (rc > 0) { //Parent
     close(inpipe[0]); //We don't need to read child's stdin
@@ -120,18 +120,21 @@ enum error_type update_user(state * s, request * req, response * res) {
   struct user * u = find_user(s, req->content.update.session_id);
   int w;
   int w_target = req->content.update.length;
-  if (w_target > 0 && w_target < IN_BUFSIZ) {
+  if (w_target > 0 && w_target <= IN_BUFSIZ) {
     w = write(u->in_fd, req->content.update.buffer, w_target);
-  } else if (w_target < 0 || w_target >= IN_BUFSIZ) {
+    if (w != w_target) {
+      printf("  ! wrote %d, expected %d\n", w, w_target);
+      return ERINTERNAL;
+    }
+  } else if (w_target < 0 || w_target > IN_BUFSIZ) {
+    printf("  ! w_target is invalid size: %d\n", w_target);
     return ERPARAM;
   }
-  if (w != w_target) {
-    return ERINTERNAL;
-  }
   int r = read(u->out_fd, res->content.update.buffer, OUT_BUFSIZ);
-  if ( r >= 0) {
+  if (r >= 0) {
     res->content.update.length = r;
   } else {
+    printf("  ! Couldn't read file descriptor\n");
     return ERINTERNAL;
   }
   return NOERR;

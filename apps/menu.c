@@ -34,6 +34,7 @@ int main(int argc, char * argv[]) {
     }
   }
   if (w < 0 || h < 0) {
+    printf("Pass arguments!\n");
     exit(1);
   }
   run_menu_loop(w, h);

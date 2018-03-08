@@ -17,25 +17,22 @@
 
 int delay = 100000; //useconds
 const char *HOST = "localhost";
-const char *PORT = "9432";
+char *PORT = "9222";
 int char_in = 0; // Leading/reading from keyboard
 int char_out = 0; // Lagging/writing to request
 char * circle_buffer;
 
 void* getKeys();
-int get_session(FILE* client_file);
+int get_session();
 request * make_request(int session_id);
-response * send_request(request * req, FILE * client_file);
-void interpret_res(response * res);
+response * send_request(request * req); void interpret_res(response * res);
+void* event_loop(void * session_id);
 
 int main(int argc, char *argv[]) {
-  /* Connect to remote machine */
-  FILE * client_file = socket_dial(HOST, PORT);
-  if (client_file == NULL) {
-    printf("Error connecting!\n");
-    return EXIT_FAILURE;
+  if (argc > 1) {
+    PORT = argv[1];
   }
-  int session_id = get_session(client_file);
+  int session_id = get_session();
 
   circle_buffer = malloc(LOCAL_BUFSIZ); //God help us all
   if (!circle_buffer) {
@@ -44,34 +41,40 @@ int main(int argc, char *argv[]) {
   }
 
   pthread_t keys;
-  if (pthread_create(&keys, NULL, getKeys, NULL)) {
+  if (pthread_create(&keys, NULL, event_loop, &session_id)) {
     printf("Threads dead baby!\n");
   }
-  while (1) {
-    request * req = make_request(session_id);
-    if (req) {
-      response * res = send_request(req, client_file);
-      interpret_res(res); //Delays only if res is not full
-    }
-  }
-  fclose(client_file);
+  getKeys();
   return EXIT_SUCCESS;
 }
 
-void *getKeys(){
-  char in_buffer[IN_BUFSIZ];
-
-  while(1){
-    int read_size = fread(in_buffer, IN_BUFSIZ, 1, stdin);
-    int i = 0;
-    while (read_size) {
-      circle_buffer[char_in] = in_buffer[i];
-      char_in = (char_in + 1) % LOCAL_BUFSIZ;
+void* event_loop(void * session_id) {
+  int sid = *(int *)session_id;
+  while (1) {
+    request * req = make_request(sid);
+    if (req) {
+      response * res = send_request(req);
+      interpret_res(res); //Delays only if res is not full
     }
   }
 }
 
-int get_session(FILE* client_file) {
+void *getKeys(){
+  printf("GETKEYS STARTED\n");
+  while(1){
+    printf("reading, in theory\n");
+    circle_buffer[char_in] = getchar();
+    char_in = (char_in + 1) % LOCAL_BUFSIZ;
+  }
+}
+
+int get_session() {
+    /* Connect to remote machine */
+    FILE * client_file = socket_dial(HOST, PORT);
+    if (client_file == NULL) {
+      printf("Error connecting!\n");
+      return EXIT_FAILURE;
+    }
     //Make new request and check and stuff
     request req;
     response res;
@@ -101,6 +104,7 @@ int get_session(FILE* client_file) {
         printf("Error connecting to server");
         exit(1);
     }
+    fclose(client_file);
 }
 
 request * make_request(int session_id) {
@@ -117,12 +121,20 @@ request * make_request(int session_id) {
     char_out = (char_out + 1) % LOCAL_BUFSIZ;
     length += 1;
   }
+  if(length)
+    printf("rqst length: %d\n", length);
   r->content.update.length = length;
   return r;
 }
 
-response * send_request(request * req, FILE * client_file) {
-  if (fwrite(&req, sizeof(request), 1, client_file) < 0)
+response * send_request(request * req) {
+  /* Connect to remote machine */
+  FILE * client_file = socket_dial(HOST, PORT);
+  if (client_file == NULL) {
+    printf("Error connecting!\n");
+    exit(1);
+  }
+  if (fwrite(req, sizeof(request), 1, client_file) < 0)
     printf("fwrite not lookin good\n");
             
   response * res = malloc(sizeof(response));
@@ -130,7 +142,7 @@ response * send_request(request * req, FILE * client_file) {
     printf("Malloc bad\n");
     return NULL;
   }
-  fread((void *)res, sizeof(response), 1, client_file);
+  fread(res, sizeof(response), 1, client_file);
   return res;
 }
 
@@ -140,10 +152,33 @@ void interpret_res(response * res) {
     exit(1);
   }
   if (res->type == RESERROR) {
-    printf("Server didn't like that.  Server didn't like that one bit.\n");
+    printf("Server didn't like that:\n");
+    switch (res->content.error.error) {
+      case ERINVALIDSESSION:
+        printf("Invalid session.\n");
+        break;
+      case ERINTERNAL:
+        printf("Internal Error.\n");
+        break;
+      case ERNOTYPE:
+        printf("No type.\n");
+        break;
+      case ERPARAM:
+        printf("Bad params.\n");
+        break;
+      case EROTHER:
+        printf("Other.\n");
+        break;
+      case NOERR:
+        printf("No error.  You shouldn't see this.\n");
+        break;
+    }
     exit(1);
   }
-  printf("%s\n", res->content.update.buffer);
+  if (res->content.update.length)
+    printf("resp length: %d\n", res->content.update.length);
+  //printf("%s", res->content.update.buffer);
+  fflush(stdout);
   if (res->content.update.length != OUT_BUFSIZ) {
     usleep(delay);
   }
