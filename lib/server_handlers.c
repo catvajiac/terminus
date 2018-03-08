@@ -61,12 +61,16 @@ request * get_request(FILE * client_file) {
 }
 
 void send_response(response * res, FILE * client_file) {
+  printf("sending response\n");
   if (!res) return;
+  printf("now sending response\n");
   fwrite((char *)res, sizeof(response), 1, client_file);
 }
 
 response * interpret_request(request * req, state * s) {
+  printf("interpreting request\n");
   if (!req) return NULL;
+  printf("now interpreting request\n");
   switch (req->type) {
     case REQCONNECT:
       return handle_connect(req, s);
@@ -80,6 +84,7 @@ response * interpret_request(request * req, state * s) {
 }
 
 response * handle_error(enum error_type e) {
+  printf("handling error\n");
   response * res = malloc(sizeof(response));
   if (!res) return NULL;
   res->type = RESERROR;
@@ -88,6 +93,7 @@ response * handle_error(enum error_type e) {
 }
 
 response * handle_update(request * req, state * s) {
+  printf("handling update\n");
   struct user * u = find_user(s, req->content.update.session_id);
   if (!u) return handle_error(ERINVALIDSESSION);
   response * res = malloc(sizeof(response));
@@ -102,6 +108,7 @@ response * handle_update(request * req, state * s) {
 }
 
 response * handle_disconnect(request * req, state * s) {
+  printf("handling disconnect\n");
   struct user * u = find_user(s, req->content.update.session_id);
   if (!u) return handle_error(ERINVALIDSESSION);
   response * res = malloc(sizeof(response));
@@ -112,6 +119,7 @@ response * handle_disconnect(request * req, state * s) {
 
 response * handle_connect(request * req, state * s) {
   int id;
+  printf("handling connect\n");
   if ((id = new_user(s, req->content.connect.width, req->content.connect.height)) < 0) return handle_error(ERINTERNAL);
   response * res = malloc(sizeof(response));
   if (!res) return NULL;
